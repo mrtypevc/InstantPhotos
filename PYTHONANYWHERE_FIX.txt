@@ -16,7 +16,10 @@ source venv/bin/activate
 # 3. Dependencies install karein
 pip install flask pillow requests python-dotenv cloudinary
 
-# 4. .env file setup karein (API Keys ke liye)
+# 4. RAM Error fix karne ke liye (Kill existing processes)
+pkill -u TypeVC uwsgi
+
+# 5. .env file setup karein (API Keys ke liye)
 cp .env.example .env
 # Ab PythonAnywhere File editor mein jaakar .env mein apni keys bharein.
 

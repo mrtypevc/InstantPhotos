@@ -19,6 +19,9 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'passport_photo_pro_secret_key_change_me')
 APP_PASSWORD = os.getenv('APP_PASSWORD', '1234')
 
+# Limit upload size to 16MB to save RAM
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
 def login_required(f):
     @functools.wraps(f)
     def decorated_function(*args, **kwargs):
@@ -83,7 +86,14 @@ def process():
             copies = int(request.form.get(f'copies_{image_index}', 1))
 
             if file:
-                img_data = file.read()
+                # Open with PIL immediately and resize to a manageable size to save RAM
+                with Image.open(file) as raw_img:
+                    # Convert to RGBA and thumbnail to max 1000px before processing
+                    raw_img.thumbnail((1000, 1000))
+                    img_io = io.BytesIO()
+                    raw_img.save(img_io, format='PNG')
+                    img_data = img_io.getvalue()
+
 
                 # 1. AI Background Removal (remove.bg)
                 if REMOVE_BG_API_KEY and REMOVE_BG_API_KEY != 'your_remove_bg_api_key_here':
@@ -125,6 +135,7 @@ def process():
                 if border_size > 0:
                     bordered_img = Image.new('RGBA', (width + 2*border_size, height + 2*border_size), 'black')
                     bordered_img.paste(img, (border_size, border_size), img)
+                    img.close()
                     img = bordered_img
 
                 processed_images.extend([img] * copies)
@@ -164,7 +175,14 @@ def process():
 
         # Save to PDF
         pdf_buffer = io.BytesIO()
-        pages[0].save(pdf_buffer, format='PDF', save_all=True, append_images=pages[1:])
+        pages[0].save(pdf_buffer, format='PDF', save_all=True, append_images=pages[1:], optimize=True)
+
+        # Cleanup
+        for img in processed_images:
+            img.close()
+        for page in pages:
+            page.close()
+
         pdf_buffer.seek(0)
 
         return send_file(pdf_buffer, mimetype='application/pdf', as_attachment=True, download_name='passport_photos.pdf')

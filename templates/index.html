@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passport Photo Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        #particles-js {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-color: #0f172a;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
+    </style>
+</head>
+<body class="text-white font-sans min-h-screen">
+    <div id="particles-js"></div>
+
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+                📸 Passport Photo Pro
+            </h1>
+            <p class="text-gray-300 text-lg">Generate print-ready passport sheets in seconds.</p>
+        </header>
+
+        <main class="max-w-4xl mx-auto">
+            <!-- Upload Area -->
+            <div id="drop-zone" class="glass rounded-2xl p-12 text-center border-2 border-dashed border-blue-500 cursor-pointer hover:bg-white/5 transition-all mb-8">
+                <input type="file" id="file-input" multiple class="hidden" accept="image/*">
+                <div class="text-6xl mb-4">📤</div>
+                <h3 class="text-xl font-semibold mb-2">Drag & Drop or Click to Upload</h3>
+                <p class="text-gray-400">Supports JPG, PNG (Max 10MB per image)</p>
+            </div>
+
+            <!-- Image Grid -->
+            <div id="image-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"></div>
+
+            <!-- Advanced Options -->
+            <details class="glass rounded-xl p-4 mb-8">
+                <summary class="cursor-pointer font-semibold text-blue-400">Advanced Options</summary>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm mb-1">Width (px)</label>
+                        <input type="number" id="opt-width" value="400" class="w-full bg-slate-800 rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Height (px)</label>
+                        <input type="number" id="opt-height" value="400" class="w-full bg-slate-800 rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Spacing (px)</label>
+                        <input type="number" id="opt-spacing" value="25" class="w-full bg-slate-800 rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Border (px)</label>
+                        <input type="number" id="opt-border" value="2" class="w-full bg-slate-800 rounded px-3 py-2">
+                    </div>
+                </div>
+            </details>
+
+            <!-- Action Button -->
+            <div class="text-center">
+                <button id="generate-btn" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-12 rounded-full text-xl shadow-lg transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    Generate Sheet
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Cropper Modal -->
+    <div id="cropper-modal" class="modal items-center justify-center p-4">
+        <div class="bg-slate-900 rounded-2xl max-w-2xl w-full p-6">
+            <div class="h-96 mb-6">
+                <img id="cropper-image" src="" alt="To Crop" class="max-h-full mx-auto">
+            </div>
+            <div class="flex justify-end gap-4">
+                <button id="cancel-crop" class="px-6 py-2 rounded-lg bg-gray-700">Cancel</button>
+                <button id="save-crop" class="px-6 py-2 rounded-lg bg-blue-600">Crop & Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Button -->
+    <button id="feedback-btn" class="fixed bottom-6 right-6 bg-red-600 hover:bg-red-700 p-4 rounded-full shadow-2xl z-50">
+        💬
+    </button>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal items-center justify-center p-4">
+        <div class="bg-slate-900 rounded-2xl max-w-md w-full p-8 relative">
+            <button id="close-feedback" class="absolute top-4 right-4 text-2xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-4">Report a Bug</h2>
+            <form id="feedback-form">
+                <div class="mb-4">
+                    <label class="block mb-1">Name</label>
+                    <input type="text" name="user_name" required class="w-full bg-slate-800 rounded px-4 py-2">
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-1">Email</label>
+                    <input type="email" name="user_email" required class="w-full bg-slate-800 rounded px-4 py-2">
+                </div>
+                <div class="mb-6">
+                    <label class="block mb-1">Issue</label>
+                    <textarea name="message" required rows="4" class="w-full bg-slate-800 rounded px-4 py-2"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-red-600 py-3 rounded-lg font-bold">Send Report</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Particles.js
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": "#ffffff" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.5, "random": false },
+                "size": { "value": 3, "random": true },
+                "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.4, "width": 1 },
+                "move": { "enable": true, "speed": 2, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": { "onhover": { "enable": true, "mode": "repulse" }, "onclick": { "enable": true, "mode": "push" }, "resize": true },
+                "modes": { "repulse": { "distance": 100, "duration": 0.4 }, "push": { "particles_nb": 4 } }
+            },
+            "retina_detect": true
+        });
+
+        // Initialize EmailJS
+        emailjs.init("xJ33GK_1lXTfTvs4f");
+
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const imageGrid = document.getElementById('image-grid');
+        const generateBtn = document.getElementById('generate-btn');
+
+        let uploadedImages = [];
+
+        // Drag & Drop
+        dropZone.onclick = () => fileInput.click();
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('bg-white/10'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('bg-white/10');
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-white/10');
+            handleFiles(e.dataTransfer.files);
+        };
+        fileInput.onchange = (e) => handleFiles(e.target.files);
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const imgObj = {
+                            id: Date.now() + Math.random(),
+                            original: e.target.result,
+                            processed: e.target.result,
+                            file: file,
+                            copies: 6
+                        };
+                        uploadedImages.push(imgObj);
+                        renderGrid();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        function renderGrid() {
+            imageGrid.innerHTML = '';
+            uploadedImages.forEach((img, index) => {
+                const card = document.createElement('div');
+                card.className = 'glass rounded-xl p-4 flex flex-col items-center';
+                card.innerHTML = `
+                    <div class="w-full h-48 rounded-lg overflow-hidden mb-4 bg-black/20">
+                        <img src="${img.processed}" class="w-full h-full object-contain">
+                    </div>
+                    <div class="flex items-center gap-4 w-full mb-4">
+                        <div class="flex-1">
+                            <label class="text-xs text-gray-400 block">Copies</label>
+                            <input type="number" min="1" max="54" value="${img.copies}"
+                                class="w-full bg-slate-800 rounded px-2 py-1 text-center"
+                                onchange="updateCopies(${index}, this.value)">
+                        </div>
+                        <button onclick="openCropper(${index})" class="bg-blue-600 px-4 py-2 rounded text-sm mt-4">Crop</button>
+                    </div>
+                    <button onclick="removeImage(${index})" class="text-red-400 text-sm hover:underline">Remove</button>
+                `;
+                imageGrid.appendChild(card);
+            });
+            generateBtn.disabled = uploadedImages.length === 0;
+        }
+
+        window.updateCopies = (index, val) => { uploadedImages[index].copies = parseInt(val); };
+        window.removeImage = (index) => { uploadedImages.splice(index, 1); renderGrid(); };
+
+        // Cropping Logic
+        let cropper;
+        let currentCropIndex;
+        const cropperModal = document.getElementById('cropper-modal');
+        const cropperImg = document.getElementById('cropper-image');
+
+        window.openCropper = (index) => {
+            currentCropIndex = index;
+            cropperImg.src = uploadedImages[index].original;
+            cropperModal.classList.add('flex');
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(cropperImg, {
+                aspectRatio: 384 / 472,
+                viewMode: 1
+            });
+        };
+
+        document.getElementById('cancel-crop').onclick = () => { cropperModal.classList.remove('flex'); };
+        document.getElementById('save-crop').onclick = () => {
+            const canvas = cropper.getCroppedCanvas();
+            uploadedImages[currentCropIndex].processed = canvas.toDataURL('image/png');
+            // Convert dataURL to Blob for the file upload
+            canvas.toBlob((blob) => {
+                uploadedImages[currentCropIndex].file = blob;
+                renderGrid();
+                cropperModal.classList.remove('flex');
+            });
+        };
+
+        // Feedback System
+        const feedbackModal = document.getElementById('feedback-modal');
+        document.getElementById('feedback-btn').onclick = () => { feedbackModal.classList.add('flex'); };
+        document.getElementById('close-feedback').onclick = () => { feedbackModal.classList.remove('flex'); };
+        document.getElementById('feedback-form').onsubmit = (e) => {
+            e.preventDefault();
+            emailjs.sendForm('service_mnido99', 'template_b2v5xlo', e.target)
+                .then(() => {
+                    alert('Feedback sent! Thank you.');
+                    feedbackModal.style.display = 'none';
+                    e.target.reset();
+                }, (error) => {
+                    alert('Failed to send: ' + JSON.stringify(error));
+                });
+        };
+
+        // Generate PDF
+        generateBtn.onclick = async () => {
+            generateBtn.disabled = true;
+            generateBtn.innerText = 'Processing...';
+
+            const formData = new FormData();
+            formData.append('width', document.getElementById('opt-width').value);
+            formData.append('height', document.getElementById('opt-height').value);
+            formData.append('spacing', document.getElementById('opt-spacing').value);
+            formData.append('border', document.getElementById('opt-border').value);
+
+            uploadedImages.forEach((img, i) => {
+                formData.append(`image_${i}`, img.file, `image_${i}.png`);
+                formData.append(`copies_${i}`, img.copies);
+            });
+
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'passport_photos.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                } else {
+                    const err = await response.text();
+                    alert('Error: ' + err);
+                }
+            } catch (e) {
+                alert('Connection error');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerText = 'Generate Sheet';
+            }
+        };
+    </script>
+</body>
+</html>

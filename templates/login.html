@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Passport Photo Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: white; }
+        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="glass p-8 rounded-2xl w-full max-w-md text-center shadow-2xl">
+        <h1 class="text-3xl font-bold mb-6 text-blue-400">🔒 Restricted Access</h1>
+        <p class="text-gray-400 mb-8">Sirf authorised users hi ise use kar sakte hain.</p>
+
+        <form method="POST">
+            <input type="password" name="password" placeholder="Enter Password" required
+                   class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 mb-4 outline-none focus:ring-2 focus:ring-blue-500">
+
+            {% if error %}
+            <p class="text-red-500 text-sm mb-4">{{ error }}</p>
+            {% endif %}
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-bold transition-all">
+                Login
+            </button>
+        </form>
+    </div>
+</body>
+</html>

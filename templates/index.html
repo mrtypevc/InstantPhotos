@@ -45,9 +45,28 @@
                 📸 Passport Photo Pro
             </h1>
             <p class="text-gray-300 text-lg">Generate print-ready passport sheets in seconds.</p>
+            <a href="/logout" class="text-red-400 hover:underline text-sm mt-2 inline-block">Logout</a>
         </header>
 
         <main class="max-w-4xl mx-auto">
+            <!-- Country Presets -->
+            <div class="glass rounded-2xl p-6 mb-8 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm font-semibold text-blue-400 mb-2">Select Passport Standard</label>
+                    <select id="country-preset" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="india">India (35x45 mm)</option>
+                        <option value="usa">USA (2x2 inch)</option>
+                        <option value="uk">UK (35x45 mm)</option>
+                        <option value="uae">UAE (4x6 cm)</option>
+                        <option value="custom">Custom Size</option>
+                    </select>
+                </div>
+                <div class="hidden md:block text-right">
+                    <p class="text-xs text-gray-400">Current Resolution</p>
+                    <p id="res-display" class="font-mono text-sm text-blue-300">413 x 531 px (300 DPI)</p>
+                </div>
+            </div>
+
             <!-- Upload Area -->
             <div id="drop-zone" class="glass rounded-2xl p-12 text-center border-2 border-dashed border-blue-500 cursor-pointer hover:bg-white/5 transition-all mb-8">
                 <input type="file" id="file-input" multiple class="hidden" accept="image/*">
@@ -65,11 +84,11 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                     <div>
                         <label class="block text-sm mb-1">Width (px)</label>
-                        <input type="number" id="opt-width" value="400" class="w-full bg-slate-800 rounded px-3 py-2">
+                        <input type="number" id="opt-width" value="413" class="w-full bg-slate-800 rounded px-3 py-2">
                     </div>
                     <div>
                         <label class="block text-sm mb-1">Height (px)</label>
-                        <input type="number" id="opt-height" value="400" class="w-full bg-slate-800 rounded px-3 py-2">
+                        <input type="number" id="opt-height" value="531" class="w-full bg-slate-800 rounded px-3 py-2">
                     </div>
                     <div>
                         <label class="block text-sm mb-1">Spacing (px)</label>
@@ -109,6 +128,13 @@
         💬
     </button>
 
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="modal items-center justify-center p-4 flex-col gap-4">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+        <p class="text-xl font-bold text-blue-400 animate-pulse">Processing AI & PDF...</p>
+        <p class="text-gray-400 text-sm">This may take up to 30 seconds</p>
+    </div>
+
     <!-- Feedback Modal -->
     <div id="feedback-modal" class="modal items-center justify-center p-4">
         <div class="bg-slate-900 rounded-2xl max-w-md w-full p-8 relative">
@@ -117,15 +143,15 @@
             <form id="feedback-form">
                 <div class="mb-4">
                     <label class="block mb-1">Name</label>
-                    <input type="text" name="user_name" required class="w-full bg-slate-800 rounded px-4 py-2">
+                    <input type="text" name="user_name" placeholder="Apna naam likhein" required class="w-full bg-slate-800 rounded px-4 py-2">
                 </div>
                 <div class="mb-4">
                     <label class="block mb-1">Email</label>
-                    <input type="email" name="user_email" required class="w-full bg-slate-800 rounded px-4 py-2">
+                    <input type="email" name="user_email" placeholder="Apna email address" required class="w-full bg-slate-800 rounded px-4 py-2">
                 </div>
                 <div class="mb-6">
                     <label class="block mb-1">Issue</label>
-                    <textarea name="message" required rows="4" class="w-full bg-slate-800 rounded px-4 py-2"></textarea>
+                    <textarea name="message" placeholder="Kya dikkat aa rahi hai? (Bug details)" required rows="4" class="w-full bg-slate-800 rounded px-4 py-2"></textarea>
                 </div>
                 <button type="submit" class="w-full bg-red-600 py-3 rounded-lg font-bold">Send Report</button>
             </form>
@@ -133,6 +159,29 @@
     </div>
 
     <script>
+        const presets = {
+            india: { w: 413, h: 531, ratio: 35/45 },
+            usa: { w: 600, h: 600, ratio: 1/1 },
+            uk: { w: 413, h: 531, ratio: 35/45 },
+            uae: { w: 472, h: 709, ratio: 4/6 },
+            custom: { w: 400, h: 400, ratio: null }
+        };
+
+        const presetSelect = document.getElementById('country-preset');
+        const optWidth = document.getElementById('opt-width');
+        const optHeight = document.getElementById('opt-height');
+        const resDisplay = document.getElementById('res-display');
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        presetSelect.onchange = (e) => {
+            const p = presets[e.target.value];
+            if (e.target.value !== 'custom') {
+                optWidth.value = p.w;
+                optHeight.value = p.h;
+                resDisplay.innerText = `${p.w} x ${p.h} px (300 DPI)`;
+            }
+        };
+
         // Initialize Particles.js
         particlesJS("particles-js", {
             "particles": {
@@ -232,8 +281,12 @@
             cropperImg.src = uploadedImages[index].original;
             cropperModal.classList.add('flex');
             if (cropper) cropper.destroy();
+
+            const currentPreset = presetSelect.value;
+            const ratio = presets[currentPreset].ratio || (optWidth.value / optHeight.value);
+
             cropper = new Cropper(cropperImg, {
-                aspectRatio: 384 / 472,
+                aspectRatio: ratio,
                 viewMode: 1
             });
         };
@@ -269,7 +322,7 @@
         // Generate PDF
         generateBtn.onclick = async () => {
             generateBtn.disabled = true;
-            generateBtn.innerText = 'Processing...';
+            loadingOverlay.classList.add('flex');
 
             const formData = new FormData();
             formData.append('width', document.getElementById('opt-width').value);
@@ -302,10 +355,10 @@
                     alert('Error: ' + err);
                 }
             } catch (e) {
-                alert('Connection error');
+                alert('Connection error: ' + e.message);
             } finally {
                 generateBtn.disabled = false;
-                generateBtn.innerText = 'Generate Sheet';
+                loadingOverlay.classList.remove('flex');
             }
         };
     </script>

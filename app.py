@@ -1,24 +1,57 @@
 import os
 import io
 import requests
-from flask import Flask, render_template, request, send_file, jsonify
+from flask import Flask, render_template, request, send_file, jsonify, session, redirect, url_for
 from PIL import Image, ImageDraw
 from dotenv import load_dotenv
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
+import functools
+try:
+    import cloudinary
+    import cloudinary.uploader
+    import cloudinary.api
+    CLOUDINARY_AVAILABLE = True
+except ImportError:
+    CLOUDINARY_AVAILABLE = False
 
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'passport_photo_pro_secret_key_change_me')
+APP_PASSWORD = os.getenv('APP_PASSWORD', '1234')
+
+def login_required(f):
+    @functools.wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'authenticated' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        if request.form.get('password') == APP_PASSWORD:
+            session['authenticated'] = True
+            return redirect(url_for('index'))
+        else:
+            return render_template('login.html', error="Ghalat Password! Fir se koshish karein.")
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('authenticated', None)
+    return redirect(url_for('login'))
 
 # Configure Cloudinary
-cloudinary.config(
-    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
-    api_key=os.getenv('CLOUDINARY_API_KEY'),
-    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
-    secure=True
-)
+if CLOUDINARY_AVAILABLE and os.getenv('CLOUDINARY_CLOUD_NAME'):
+    cloudinary.config(
+        cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+        api_key=os.getenv('CLOUDINARY_API_KEY'),
+        api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+        secure=True
+    )
+else:
+    CLOUDINARY_AVAILABLE = False
 
 REMOVE_BG_API_KEY = os.getenv('REMOVE_BG_API_KEY')
 
@@ -27,10 +60,12 @@ A4_WIDTH = 2480
 A4_HEIGHT = 3508
 
 @app.route('/')
+@login_required
 def index():
     return render_template('index.html')
 
 @app.route('/process', methods=['POST'])
+@login_required
 def process():
     try:
         # Get settings
@@ -65,7 +100,7 @@ def process():
                         print(f"Remove.bg error: {response.text}")
 
                 # 2. AI Image Enhancement (Cloudinary)
-                if os.getenv('CLOUDINARY_CLOUD_NAME') and os.getenv('CLOUDINARY_CLOUD_NAME') != 'your_cloud_name':
+                if CLOUDINARY_AVAILABLE:
                     try:
                         upload_result = cloudinary.uploader.upload(
                             img_data,
@@ -82,6 +117,7 @@ def process():
                         img = Image.open(io.BytesIO(img_data)).convert("RGBA")
                         img = img.resize((width, height), Image.LANCZOS)
                 else:
+                    # Fallback to standard resize if Cloudinary is not available
                     img = Image.open(io.BytesIO(img_data)).convert("RGBA")
                     img = img.resize((width, height), Image.LANCZOS)
 

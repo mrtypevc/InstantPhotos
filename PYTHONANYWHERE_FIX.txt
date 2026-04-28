@@ -1,0 +1,47 @@
+# 🛠️ PythonAnywhere Final Fix Commands
+
+Ye commands ek-ek karke apne PythonAnywhere Bash Console mein copy-paste karein. Isse path ki galti aur library errors dono theek ho jayenge:
+
+# 1. Purane folders ko sahi jagah move karein (Cleanup)
+mkdir -p /home/TypeVC/passport-app
+mv /home/TypeVC/passport-apppassport-app/* /home/TypeVC/passport-app/ 2>/dev/null
+mv /home/TypeVC/passport-apppassport-app/.* /home/TypeVC/passport-app/ 2>/dev/null
+rm -rf /home/TypeVC/passport-apppassport-app
+
+# 2. Virtual Environment banayein (Recommended for errors)
+cd /home/TypeVC/passport-app
+python3 -m venv venv
+source venv/bin/activate
+
+# 3. Dependencies install karein
+pip install flask pillow requests python-dotenv cloudinary
+
+# 4. .env file setup karein (API Keys ke liye)
+cp .env.example .env
+# Ab PythonAnywhere File editor mein jaakar .env mein apni keys bharein.
+
+---
+
+### Iske baad "Web" tab mein ye settings karein:
+
+1. **Source code:** `/home/TypeVC/passport-app`
+2. **Working directory:** `/home/TypeVC/passport-app`
+3. **Virtualenv:** `/home/TypeVC/passport-app/venv`
+4. **WSGI Configuration File:** (Ise click karke niche wala code paste karein)
+
+```python
+import sys
+import os
+from dotenv import load_dotenv
+
+path = '/home/TypeVC/passport-app'
+if path not in sys.path:
+    sys.path.append(path)
+
+os.chdir(path)
+load_dotenv(os.path.join(path, '.env'))
+
+from app import app as application
+```
+
+Reload karein aur aapki app live ho jayegi!

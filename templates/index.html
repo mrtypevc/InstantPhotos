@@ -12,6 +12,11 @@
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
+        :root {
+            --neon-green: #4ade80;
+            --neon-orange: #fb923c;
+            --smoky-bg: #020617;
+        }
         #particles-js {
             position: fixed;
             top: 0;
@@ -19,12 +24,40 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            background-color: #0f172a;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
         }
         .glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+        .neon-border-green {
+            border: 1px solid var(--neon-green);
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.3);
+        }
+        .neon-border-orange {
+            border: 1px solid var(--neon-orange);
+            box-shadow: 0 0 15px rgba(251, 146, 60, 0.3);
+        }
+        .futuristic-btn {
+            background: linear-gradient(45deg, var(--neon-green), var(--neon-orange));
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .futuristic-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        .futuristic-btn:hover::before {
+            left: 100%;
         }
         .modal {
             display: none;
@@ -43,19 +76,19 @@
 
     <div class="container mx-auto px-4 py-8 relative z-10">
         <header class="text-center mb-12">
-            <h1 class="text-5xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-                Passport Photo Maker
+            <h1 class="text-6xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-orange-500 tracking-tighter italic">
+                PASSPORT PRO
             </h1>
-            <p class="text-gray-300 text-lg">Professional, print-ready sheets in seconds.</p>
-            <a href="/logout" class="text-red-400 hover:underline text-sm mt-2 inline-block">Logout</a>
+            <p class="text-green-300 font-mono text-sm uppercase tracking-widest opacity-80">Next-Gen Image Processing Core</p>
+            <a href="/logout" class="text-orange-400 hover:text-orange-300 text-xs font-bold mt-4 inline-block uppercase tracking-tighter">System Logout</a>
         </header>
 
         <main class="max-w-4xl mx-auto">
             <!-- Speed & Background Options -->
-            <div class="glass rounded-2xl p-6 mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="glass rounded-3xl p-8 mb-8 grid grid-cols-1 md:grid-cols-3 gap-8 neon-border-green">
                 <div>
-                    <label class="block text-sm font-semibold text-blue-400 mb-2">Processing Mode</label>
-                    <select id="process-mode" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 outline-none">
+                    <label class="block text-xs font-bold text-green-400 mb-2 uppercase tracking-tighter">Engine Mode</label>
+                    <select id="process-mode" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-green-400 transition-all">
                         <option value="fast">Fast Mode (2-3 Seconds)</option>
                         <option value="ai">AI Mode (Background Removal + Sharpness)</option>
                     </select>
@@ -83,7 +116,7 @@
             </div>
 
             <!-- Upload Area -->
-            <div id="drop-zone" class="glass rounded-2xl p-12 text-center border-2 border-dashed border-blue-500 cursor-pointer hover:bg-white/5 transition-all mb-8">
+            <div id="drop-zone" class="glass rounded-3xl p-16 text-center border-2 border-dashed border-orange-500 cursor-pointer hover:bg-green-500/5 transition-all mb-8 group">
                 <input type="file" id="file-input" multiple class="hidden" accept="image/*">
                 <div class="text-6xl mb-4">📤</div>
                 <h3 class="text-xl font-semibold mb-2">Drag & Drop or Click to Upload</h3>
@@ -118,8 +151,8 @@
 
             <!-- Action Button -->
             <div class="text-center mb-16">
-                <button id="generate-btn" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-12 rounded-full text-xl shadow-lg transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                    Generate Sheet
+                <button id="generate-btn" class="futuristic-btn text-white font-black py-5 px-16 rounded-2xl text-2xl shadow-2xl transform hover:scale-105 active:scale-95 transition-all disabled:opacity-30 uppercase tracking-widest">
+                    Execute Generation
                 </button>
             </div>
 
@@ -178,10 +211,15 @@
     </button>
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="modal items-center justify-center p-4 flex-col gap-4">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
-        <p class="text-xl font-bold text-blue-400 animate-pulse">Processing AI & PDF...</p>
-        <p class="text-gray-400 text-sm">This may take up to 30 seconds</p>
+    <div id="loading-overlay" class="modal items-center justify-center p-4 flex-col gap-6">
+        <div class="relative w-24 h-24">
+            <div class="absolute inset-0 border-4 border-green-500/20 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <div class="text-center">
+            <p class="text-2xl font-black text-green-400 tracking-widest animate-pulse italic">PROCESSING CORE...</p>
+            <p class="text-orange-300 text-xs font-mono uppercase mt-2">Uploading to Neural Network</p>
+        </div>
     </div>
 
     <!-- Feedback Modal -->
@@ -235,18 +273,18 @@
         // Initialize Particles.js
         particlesJS("particles-js", {
             "particles": {
-                "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
-                "color": { "value": "#ffffff" },
+                "number": { "value": 100, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": ["#4ade80", "#fb923c"] },
                 "shape": { "type": "circle" },
-                "opacity": { "value": 0.5, "random": false },
-                "size": { "value": 3, "random": true },
-                "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.4, "width": 1 },
-                "move": { "enable": true, "speed": 2, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
+                "opacity": { "value": 0.3, "random": true },
+                "size": { "value": 2, "random": true },
+                "line_linked": { "enable": true, "distance": 150, "color": "#4ade80", "opacity": 0.2, "width": 1 },
+                "move": { "enable": true, "speed": 4, "direction": "none", "random": true, "straight": false, "out_mode": "out", "bounce": false }
             },
             "interactivity": {
-                "detect_on": "canvas",
-                "events": { "onhover": { "enable": true, "mode": "repulse" }, "onclick": { "enable": true, "mode": "push" }, "resize": true },
-                "modes": { "repulse": { "distance": 100, "duration": 0.4 }, "push": { "particles_nb": 4 } }
+                "detect_on": "window",
+                "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "pulse" }, "resize": true },
+                "modes": { "grab": { "distance": 200, "line_linked": { "opacity": 0.5 } } }
             },
             "retina_detect": true
         });

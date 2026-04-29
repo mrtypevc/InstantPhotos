@@ -76,6 +76,8 @@ def process():
         height = int(request.form.get('height', 400))
         spacing = int(request.form.get('spacing', 25))
         border_size = int(request.form.get('border', 2))
+        bg_color = request.form.get('bg_color', '#ffffff')
+        skip_ai = request.form.get('skip_ai') == 'true'
 
         processed_images = []
 
@@ -96,21 +98,21 @@ def process():
 
 
                 # 1. AI Background Removal (remove.bg)
-                if REMOVE_BG_API_KEY and REMOVE_BG_API_KEY != 'your_remove_bg_api_key_here':
-                    response = requests.post(
-                        'https://api.remove.bg/v1.0/removebg',
-                        files={'image_file': img_data},
-                        data={'size': 'auto'},
-                        headers={'X-Api-Key': REMOVE_BG_API_KEY},
-                    )
-
-                    if response.status_code == 200:
-                        img_data = response.content
-                    else:
-                        print(f"Remove.bg error: {response.text}")
+                if not skip_ai and REMOVE_BG_API_KEY and REMOVE_BG_API_KEY != 'your_remove_bg_api_key_here':
+                    try:
+                        response = requests.post(
+                            'https://api.remove.bg/v1.0/removebg',
+                            files={'image_file': img_data},
+                            data={'size': 'auto', 'bg_color': bg_color.lstrip('#')},
+                            headers={'X-Api-Key': REMOVE_BG_API_KEY},
+                            timeout=5
+                        )
+                        if response.status_code == 200:
+                            img_data = response.content
+                    except: pass
 
                 # 2. AI Image Enhancement (Cloudinary)
-                if CLOUDINARY_AVAILABLE:
+                if not skip_ai and CLOUDINARY_AVAILABLE:
                     try:
                         upload_result = cloudinary.uploader.upload(
                             img_data,
@@ -123,15 +125,20 @@ def process():
                         enhanced_img_data = requests.get(enhanced_url).content
                         img = Image.open(io.BytesIO(enhanced_img_data)).convert("RGBA")
                     except Exception as e:
-                        print(f"Cloudinary error: {e}")
                         img = Image.open(io.BytesIO(img_data)).convert("RGBA")
                         img = img.resize((width, height), Image.LANCZOS)
                 else:
-                    # Fallback to standard resize if Cloudinary is not available
+                    # Fallback to standard resize
                     img = Image.open(io.BytesIO(img_data)).convert("RGBA")
                     img = img.resize((width, height), Image.LANCZOS)
+                    # Add background color manually if AI was skipped
+                    if bg_color:
+                        new_img = Image.new("RGBA", img.size, bg_color)
+                        new_img.paste(img, (0, 0), img)
+                        img.close()
+                        img = new_img
 
-                # Add border if needed
+                # Add border
                 if border_size > 0:
                     bordered_img = Image.new('RGBA', (width + 2*border_size, height + 2*border_size), 'black')
                     bordered_img.paste(img, (border_size, border_size), img)

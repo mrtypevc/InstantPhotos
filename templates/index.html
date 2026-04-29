@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Passport Photo Pro</title>
+    <title>Professional Passport Photo Maker | type4u.qzz.io</title>
+    <meta name="description" content="Generate high-quality, print-ready passport and visa photos online. Support for India, USA, UK, and custom sizes. Fast, secure, and professional.">
+    <meta name="keywords" content="passport photo maker, visa photo, print ready photo, A4 photo sheet, online photo cropper">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
@@ -42,25 +44,38 @@
     <div class="container mx-auto px-4 py-8 relative z-10">
         <header class="text-center mb-12">
             <h1 class="text-5xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-                📸 Passport Photo Pro
+                Passport Photo Maker
             </h1>
-            <p class="text-gray-300 text-lg">Generate print-ready passport sheets in seconds.</p>
+            <p class="text-gray-300 text-lg">Professional, print-ready sheets in seconds.</p>
             <a href="/logout" class="text-red-400 hover:underline text-sm mt-2 inline-block">Logout</a>
         </header>
 
         <main class="max-w-4xl mx-auto">
-            <!-- Country Presets -->
-            <div class="glass rounded-2xl p-6 mb-8 flex flex-wrap items-center justify-between gap-4">
-                <div class="flex-1 min-w-[200px]">
-                    <label class="block text-sm font-semibold text-blue-400 mb-2">Select Passport Standard</label>
-                    <select id="country-preset" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+            <!-- Speed & Background Options -->
+            <div class="glass rounded-2xl p-6 mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-blue-400 mb-2">Processing Mode</label>
+                    <select id="process-mode" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 outline-none">
+                        <option value="fast">Fast Mode (2-3 Seconds)</option>
+                        <option value="ai">AI Mode (Background Removal + Sharpness)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-blue-400 mb-2">Background Color</label>
+                    <input type="color" id="bg-color" value="#ffffff" class="w-full h-10 bg-slate-800 border border-slate-700 rounded-lg px-2 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-blue-400 mb-2">Photo Size Preset</label>
+                    <select id="country-preset" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 outline-none">
                         <option value="india">India (35x45 mm)</option>
                         <option value="usa">USA (2x2 inch)</option>
                         <option value="uk">UK (35x45 mm)</option>
                         <option value="uae">UAE (4x6 cm)</option>
+                        <option value="large">Full Page (A4)</option>
                         <option value="custom">Custom Size</option>
                     </select>
                 </div>
+            </div>
                 <div class="hidden md:block text-right">
                     <p class="text-xs text-gray-400">Current Resolution</p>
                     <p id="res-display" class="font-mono text-sm text-blue-300">413 x 531 px (300 DPI)</p>
@@ -102,12 +117,46 @@
             </details>
 
             <!-- Action Button -->
-            <div class="text-center">
+            <div class="text-center mb-16">
                 <button id="generate-btn" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-12 rounded-full text-xl shadow-lg transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     Generate Sheet
                 </button>
             </div>
+
+            <!-- AdSense Placeholder -->
+            <div class="glass rounded-xl p-8 mb-16 text-center text-gray-500">
+                <p>Advertisement Space</p>
+                <!-- Google AdSense Code Here -->
+            </div>
+
+            <!-- SEO Content Sections -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+                <div class="glass p-6 rounded-xl">
+                    <h2 class="text-2xl font-bold text-blue-400 mb-4">About Our Service</h2>
+                    <p class="text-gray-300 leading-relaxed">
+                        We provide a professional-grade online tool to create passport and visa photos for multiple countries.
+                        Our system ensures your photos meet the exact dimensions required for official applications,
+                        all while maintaining the highest privacy standards.
+                    </p>
+                </div>
+                <div class="glass p-6 rounded-xl">
+                    <h2 class="text-2xl font-bold text-blue-400 mb-4">Privacy & Security</h2>
+                    <p class="text-gray-300 leading-relaxed">
+                        Your privacy is our priority. All uploaded photos are processed securely and deleted from our servers
+                        automatically. We do not store your personal data or share your images with third parties.
+                    </p>
+                </div>
+            </section>
         </main>
+
+        <footer class="border-t border-white/10 mt-12 py-8 text-center text-gray-400">
+            <div class="flex justify-center gap-8 mb-4 text-sm">
+                <a href="#" class="hover:text-white">Privacy Policy</a>
+                <a href="#" class="hover:text-white">Terms of Service</a>
+                <a href="#" class="hover:text-white">Contact Us</a>
+            </div>
+            <p>Copyright &copy; 2024 - Powered by <a href="https://www.type4u.qzz.io" class="text-blue-500 hover:underline">type4u.qzz.io</a></p>
+        </footer>
     </div>
 
     <!-- Cropper Modal -->
@@ -164,6 +213,7 @@
             usa: { w: 600, h: 600, ratio: 1/1 },
             uk: { w: 413, h: 531, ratio: 35/45 },
             uae: { w: 472, h: 709, ratio: 4/6 },
+            large: { w: 2480, h: 3508, ratio: 2480/3508 },
             custom: { w: 400, h: 400, ratio: null }
         };
 
@@ -329,6 +379,8 @@
             formData.append('height', document.getElementById('opt-height').value);
             formData.append('spacing', document.getElementById('opt-spacing').value);
             formData.append('border', document.getElementById('opt-border').value);
+            formData.append('bg_color', document.getElementById('bg-color').value);
+            formData.append('skip_ai', document.getElementById('process-mode').value === 'fast');
 
             uploadedImages.forEach((img, i) => {
                 formData.append(`image_${i}`, img.file, `image_${i}.png`);

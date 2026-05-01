@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PASSPORT PRO | type4u.qzz.io</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <meta name="description" content="Professional Passport and Visa Photo Generator. High speed, print-ready sheets.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        :root {
+            --neon-green: #4ade80;
+            --neon-orange: #fb923c;
+        }
+        * {
+            font-family: 'VT323', monospace !important;
+            letter-spacing: 1px;
+            border-radius: 0 !important;
+        }
+        body {
+            background-color: #000;
+            color: #fff;
+        }
+        #particles-js {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: #000;
+        }
+        .glass {
+            background: #000;
+            border: 4px solid var(--neon-green);
+            box-shadow: 10px 10px 0px #166534;
+        }
+        .neon-border-green { border: 4px solid var(--neon-green); }
+        .neon-border-orange { border: 4px solid var(--neon-orange); box-shadow: 10px 10px 0px #7c2d12; }
+        
+        .blocky-btn {
+            background: var(--neon-green);
+            color: #000;
+            border: 4px solid #166534;
+            box-shadow: 6px 6px 0px #064e3b;
+            font-weight: 900;
+            text-transform: uppercase;
+            transition: all 0.1s ease;
+        }
+        .blocky-btn:active {
+            transform: translate(3px, 3px);
+            box-shadow: 3px 3px 0px #064e3b;
+        }
+        .blocky-btn-orange {
+            background: var(--neon-orange);
+            border-color: #7c2d12;
+            box-shadow: 6px 6px 0px #431407;
+        }
+        .blocky-btn-orange:active {
+            box-shadow: 3px 3px 0px #431407;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+        }
+        
+        select, input {
+            background: #000 !important;
+            border: 4px solid #334155 !important;
+            color: var(--neon-green) !important;
+            padding: 10px !important;
+        }
+        select:focus, input:focus {
+            border-color: var(--neon-green) !important;
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen">
+    <div id="particles-js"></div>
+
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <header class="text-center mb-16">
+            <h1 class="text-8xl font-black mb-4 text-green-400 tracking-tighter">
+                PASSPORT PRO
+            </h1>
+            <p class="text-orange-400 text-3xl uppercase tracking-widest">[GENERATE_SYSTEM_CORE]</p>
+            <a href="/logout" class="text-red-500 hover:underline text-xl mt-4 inline-block uppercase">[TERMINATE_SESSION]</a>
+        </header>
+
+        <main class="max-w-4xl mx-auto">
+            <!-- Engine Configuration -->
+            <div class="glass p-8 mb-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <label class="block text-2xl font-bold text-green-400 mb-2 uppercase">[ENGINE_MODE]</label>
+                    <select id="process-mode" class="w-full text-xl">
+                        <option value="fast">FAST_MODE (2-3s)</option>
+                        <option value="ai" selected>AI_MODE (HIGH_RES)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-2xl font-bold text-orange-400 mb-2 uppercase">[BG_COLOR]</label>
+                    <input type="color" id="bg-color" value="#ffffff" class="w-full h-16 cursor-pointer">
+                </div>
+                <div>
+                    <label class="block text-2xl font-bold text-green-400 mb-2 uppercase">[SIZE_PRESET]</label>
+                    <select id="country-preset" class="w-full text-xl">
+                        <option value="india">INDIA (35x45MM)</option>
+                        <option value="usa">USA (2x2INCH)</option>
+                        <option value="uk">UK (35x45MM)</option>
+                        <option value="uae">UAE (4x6CM)</option>
+                        <option value="large">FULL_PAGE (A4)</option>
+                        <option value="custom">CUSTOM_SIZE</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Upload Zone -->
+            <div id="drop-zone" class="glass p-16 text-center border-4 border-dashed border-orange-500 cursor-pointer hover:bg-green-500/10 transition-all mb-12 group">
+                <input type="file" id="file-input" multiple class="hidden" accept="image/*">
+                <h3 class="text-5xl font-black mb-4 text-orange-400 uppercase">LOAD_RESOURCES</h3>
+                <p class="text-2xl text-gray-400 uppercase tracking-widest">DRAG_OR_CLICK_TO_UPLOAD_IMAGE</p>
+            </div>
+
+            <!-- Image Grid -->
+            <div id="image-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12"></div>
+
+            <!-- Configuration Details -->
+            <details class="glass p-6 mb-12">
+                <summary class="cursor-pointer font-bold text-orange-400 text-3xl uppercase tracking-tighter">[ADVANCED_CONFIG]</summary>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6">
+                    <div>
+                        <label class="block text-xl mb-1 uppercase font-bold text-green-400">WIDTH_PX</label>
+                        <input type="number" id="opt-width" value="413" class="w-full text-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xl mb-1 uppercase font-bold text-green-400">HEIGHT_PX</label>
+                        <input type="number" id="opt-height" value="531" class="w-full text-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xl mb-1 uppercase font-bold text-green-400">SPACING_PX</label>
+                        <input type="number" id="opt-spacing" value="25" class="w-full text-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xl mb-1 uppercase font-bold text-green-400">BORDER_PX</label>
+                        <input type="number" id="opt-border" value="2" class="w-full text-xl">
+                    </div>
+                </div>
+            </details>
+
+            <!-- Execution Button -->
+            <div class="text-center mb-24">
+                <button id="generate-btn" class="blocky-btn py-8 px-24 text-5xl disabled:opacity-50">
+                    EXECUTE_GENERATE
+                </button>
+            </div>
+
+            <!-- System Info -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-24">
+                <div class="glass p-8 neon-border-green">
+                    <h2 class="text-4xl font-black text-green-400 mb-6 uppercase">ABOUT_SERVICE</h2>
+                    <p class="text-gray-300 text-2xl leading-relaxed uppercase">
+                        Passport Pro is a high-speed, precision-engineered platform designed for creating official passport and visa photos. 
+                        Compliance guaranteed (300 DPI).
+                    </p>
+                </div>
+                <div class="glass p-8 neon-border-orange">
+                    <h2 class="text-4xl font-black text-orange-400 mb-6 uppercase">PRIVACY_SECURITY</h2>
+                    <p class="text-gray-300 text-2xl leading-relaxed uppercase">
+                        End-to-end encryption active. Biometric data purged immediately after generation. 
+                        Zero data retention policy in effect.
+                    </p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="border-t-4 border-slate-800 mt-12 py-12 text-center text-gray-500">
+            <div class="flex justify-center gap-12 mb-6 text-2xl uppercase font-bold">
+                <button onclick="openPolicy('privacy')" class="hover:text-green-400">PRIVACY_POLICY</button>
+                <button onclick="openPolicy('terms')" class="hover:text-green-400">TERMS_OF_SERVICE</button>
+                <button onclick="openPolicy('contact')" class="hover:text-green-400">CONTACT_US</button>
+            </div>
+            <p class="text-xl uppercase">Copyright &copy; 2026 - Powered by <a href="https://www.type4u.qzz.io" class="text-green-400 hover:underline">type4u.qzz.io</a></p>
+        </footer>
+    </div>
+
+    <!-- Cropper Modal -->
+    <div id="cropper-modal" class="modal items-center justify-center p-4">
+        <div class="glass max-w-4xl w-full p-8 relative neon-border-orange">
+            <h2 class="text-5xl font-black text-orange-400 mb-8 uppercase">[ADJUST_CROP_DIMENSIONS]</h2>
+            <div class="h-[60vh] mb-8 bg-black border-4 border-slate-700">
+                <img id="cropper-image" src="" alt="To Crop" class="max-h-full mx-auto">
+            </div>
+            <div class="flex justify-end gap-8">
+                <button id="cancel-crop" class="px-10 py-4 bg-slate-800 text-white font-black uppercase text-2xl border-4 border-slate-900">ABORT</button>
+                <button id="save-crop" class="blocky-btn px-10 py-4 text-2xl">CONFIRM_CROP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Button -->
+    <button id="feedback-btn" class="fixed bottom-10 right-10 blocky-btn-orange p-8 text-3xl font-black z-50">
+        REPORT_BUG
+    </button>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="modal items-center justify-center p-4 flex-col gap-8">
+        <div class="glass p-12 text-center neon-border-green">
+            <p class="text-6xl font-black text-green-400 animate-pulse tracking-widest uppercase">INITIALIZING_CORE...</p>
+            <p class="text-orange-300 text-3xl font-mono uppercase mt-6">PROCESSING_NEURAL_LAYERS</p>
+        </div>
+    </div>
+
+    <!-- Policy Modal -->
+    <div id="policy-modal" class="modal items-center justify-center p-4 overflow-y-auto">
+        <div class="glass max-w-2xl w-full p-12 relative neon-border-green">
+            <button onclick="closePolicy()" class="absolute top-6 right-6 text-6xl text-orange-400 font-black">&times;</button>
+            <h2 id="policy-title" class="text-5xl font-black text-green-400 mb-8 uppercase">Title</h2>
+            <div id="policy-content" class="text-gray-300 space-y-6 max-h-[60vh] overflow-y-auto pr-6 text-2xl leading-relaxed uppercase"></div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal items-center justify-center p-4">
+        <div class="glass max-w-md w-full p-12 relative neon-border-orange">
+            <button id="close-feedback" class="absolute top-6 right-6 text-6xl text-orange-400 font-black">&times;</button>
+            <h2 class="text-5xl font-black mb-8 text-orange-400 uppercase">BUG_REPORT</h2>
+            <form id="feedback-form">
+                <div class="mb-6">
+                    <label class="block text-2xl font-bold text-green-400 uppercase mb-2">NAME</label>
+                    <input type="text" name="user_name" placeholder="ENTER_NAME" required class="w-full text-xl">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-2xl font-bold text-green-400 uppercase mb-2">EMAIL</label>
+                    <input type="email" name="user_email" placeholder="ENTER_EMAIL" required class="w-full text-xl">
+                </div>
+                <div class="mb-8">
+                    <label class="block text-2xl font-bold text-green-400 uppercase mb-2">ISSUE</label>
+                    <textarea name="message" placeholder="DESCRIBE_ERROR" required rows="4" class="w-full text-xl"></textarea>
+                </div>
+                <button type="submit" class="blocky-btn-orange w-full py-6 text-3xl font-black">SUBMIT_REPORT</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const policyTexts = {
+            privacy: {
+                title: "Privacy Policy",
+                content: `
+                    <p>Information Protection Active.</p>
+                    <p>1. Data Collection: Biometric input only.</p>
+                    <p>2. Retention: 0ms after generation.</p>
+                    <p>3. Encryption: AES-256 standard.</p>
+                `
+            },
+            terms: {
+                title: "Terms of Service",
+                content: `
+                    <p>System Usage Protocols:</p>
+                    <p>1. Authorized Use only.</p>
+                    <p>2. Compliance with local laws mandatory.</p>
+                    <p>3. Service provided as-is without liability.</p>
+                `
+            },
+            contact: {
+                title: "Contact Support",
+                content: `
+                    <p>Terminal Support Access:</p>
+                    <p>Email: support@type4u.qzz.io</p>
+                    <p>Web: www.type4u.qzz.io</p>
+                `
+            }
+        };
+
+        window.openPolicy = (type) => {
+            const policy = policyTexts[type];
+            document.getElementById('policy-title').innerText = policy.title;
+            document.getElementById('policy-content').innerHTML = policy.content;
+            document.getElementById('policy-modal').classList.add('flex');
+        };
+
+        window.closePolicy = () => {
+            document.getElementById('policy-modal').classList.remove('flex');
+        };
+
+        const presets = {
+            india: { w: 413, h: 531, ratio: 35/45 },
+            usa: { w: 600, h: 600, ratio: 1/1 },
+            uk: { w: 413, h: 531, ratio: 35/45 },
+            uae: { w: 472, h: 709, ratio: 4/6 },
+            postcard: { w: 1200, h: 1800, ratio: 4/6 },
+            large_5x7: { w: 1500, h: 2100, ratio: 5/7 },
+            full_a4: { w: 2480, h: 3508, ratio: 2480/3508 },
+            custom: { w: 400, h: 400, ratio: null }
+        };
+
+        const presetSelect = document.getElementById('country-preset');
+        const optWidth = document.getElementById('opt-width');
+        const optHeight = document.getElementById('opt-height');
+        
+        presetSelect.onchange = (e) => {
+            const p = presets[e.target.value];
+            if (e.target.value !== 'custom') {
+                optWidth.value = p.w;
+                optHeight.value = p.h;
+            }
+        };
+
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 120, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": ["#4ade80", "#fb923c"] },
+                "shape": { "type": "edge" },
+                "opacity": { "value": 0.2, "random": true },
+                "size": { "value": 3, "random": true },
+                "line_linked": { "enable": true, "distance": 150, "color": "#4ade80", "opacity": 0.1, "width": 2 },
+                "move": { "enable": true, "speed": 6, "direction": "none", "random": true, "straight": false, "out_mode": "out", "bounce": false }
+            },
+            "interactivity": {
+                "detect_on": "window",
+                "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" } }
+            },
+            "retina_detect": true
+        });
+
+        emailjs.init("xJ33GK_1lXTfTvs4f");
+
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const imageGrid = document.getElementById('image-grid');
+        const generateBtn = document.getElementById('generate-btn');
+        let uploadedImages = [];
+
+        dropZone.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => handleFiles(e.target.files);
+        dropZone.ondrop = (e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); };
+        dropZone.ondragover = (e) => e.preventDefault();
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const imgObj = { id: Date.now() + Math.random(), original: e.target.result, processed: e.target.result, file: file, copies: 6 };
+                        uploadedImages.push(imgObj);
+                        renderGrid();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        function renderGrid() {
+            imageGrid.innerHTML = '';
+            uploadedImages.forEach((img, index) => {
+                const card = document.createElement('div');
+                card.className = 'glass p-6 flex flex-col items-center neon-border-green';
+                card.innerHTML = `
+                    <div class="w-full h-48 border-4 border-slate-800 mb-6 bg-black">
+                        <img src="${img.processed}" class="w-full h-full object-contain">
+                    </div>
+                    <div class="grid grid-cols-2 gap-6 w-full mb-6">
+                        <div>
+                            <label class="text-xl text-green-400 block uppercase font-bold mb-2">COPIES</label>
+                            <input type="number" min="1" max="54" value="${img.copies}" 
+                                class="w-full text-center" onchange="updateCopies(${index}, this.value)">
+                        </div>
+                        <button onclick="openCropper(${index})" class="blocky-btn text-2xl h-full mt-8">CROP</button>
+                    </div>
+                    <button onclick="removeImage(${index})" class="text-red-500 text-2xl font-bold uppercase hover:underline">REMOVE_FILE</button>
+                `;
+                imageGrid.appendChild(card);
+            });
+            generateBtn.disabled = uploadedImages.length === 0;
+        }
+
+        window.updateCopies = (index, val) => { uploadedImages[index].copies = parseInt(val); };
+        window.removeImage = (index) => { uploadedImages.splice(index, 1); renderGrid(); };
+
+        let cropper;
+        let currentCropIndex;
+        const cropperModal = document.getElementById('cropper-modal');
+        const cropperImg = document.getElementById('cropper-image');
+
+        window.openCropper = (index) => {
+            currentCropIndex = index;
+            cropperImg.src = uploadedImages[index].original;
+            cropperModal.style.display = 'flex';
+            if (cropper) cropper.destroy();
+            const ratio = presets[presetSelect.value].ratio || (optWidth.value / optHeight.value);
+            cropper = new Cropper(cropperImg, { aspectRatio: ratio, viewMode: 1 });
+        };
+
+        document.getElementById('cancel-crop').onclick = () => { cropperModal.style.display = 'none'; };
+        document.getElementById('save-crop').onclick = () => {
+            const canvas = cropper.getCroppedCanvas();
+            uploadedImages[currentCropIndex].processed = canvas.toDataURL('image/png');
+            canvas.toBlob((blob) => {
+                uploadedImages[currentCropIndex].file = blob;
+                renderGrid();
+                cropperModal.style.display = 'none';
+            });
+        };
+
+        const feedbackModal = document.getElementById('feedback-modal');
+        document.getElementById('feedback-btn').onclick = () => { feedbackModal.style.display = 'flex'; };
+        document.getElementById('close-feedback').onclick = () => { feedbackModal.style.display = 'none'; };
+        document.getElementById('feedback-form').onsubmit = (e) => {
+            e.preventDefault();
+            emailjs.sendForm('service_mnido99', 'template_b2v5xlo', e.target)
+                .then(() => { alert('REPORT_SENT'); feedbackModal.style.display = 'none'; e.target.reset(); }, 
+                (error) => { alert('FAILED_TO_SEND'); });
+        };
+
+        generateBtn.onclick = async () => {
+            generateBtn.disabled = true;
+            document.getElementById('loading-overlay').style.display = 'flex';
+            const formData = new FormData();
+            formData.append('width', document.getElementById('opt-width').value);
+            formData.append('height', document.getElementById('opt-height').value);
+            formData.append('spacing', document.getElementById('opt-spacing').value);
+            formData.append('border', document.getElementById('opt-border').value);
+            formData.append('bg_color', document.getElementById('bg-color').value);
+            formData.append('skip_ai', document.getElementById('process-mode').value === 'fast');
+            uploadedImages.forEach((img, i) => {
+                formData.append(`image_${i}`, img.file, `image_${i}.png`);
+                formData.append(`copies_${i}`, img.copies);
+            });
+            try {
+                const response = await fetch('/process', { method: 'POST', body: formData });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = 'passport_photos.pdf'; a.click();
+                } else { alert('PROCESS_ERROR'); }
+            } catch (e) { alert('CONNECTION_FAILURE'); } 
+            finally { generateBtn.disabled = false; document.getElementById('loading-overlay').style.display = 'none'; }
+        };
+    </script>
+</body>
+</html>

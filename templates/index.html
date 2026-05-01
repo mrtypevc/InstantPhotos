@@ -164,19 +164,20 @@
 
             <!-- SEO Content Sections -->
             <section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-                <div class="glass p-6 rounded-xl">
-                    <h2 class="text-2xl font-bold text-blue-400 mb-4">About Our Service</h2>
-                    <p class="text-gray-300 leading-relaxed">
-                        We provide a professional-grade online tool to create passport and visa photos for multiple countries.
-                        Our system ensures your photos meet the exact dimensions required for official applications,
-                        all while maintaining the highest privacy standards.
+                <div class="glass p-8 rounded-3xl neon-border-green">
+                    <h2 class="text-2xl font-black text-green-400 mb-4 uppercase tracking-tighter">About Our Service</h2>
+                    <p class="text-gray-300 leading-relaxed text-sm">
+                        Passport Pro is a high-speed, precision-engineered platform designed for creating official passport and visa photos.
+                        Leveraging advanced image processing, we provide print-ready A4 sheets that comply with international standards (300 DPI).
+                        Our mission is to deliver professional photography results from the comfort of your home.
                     </p>
                 </div>
-                <div class="glass p-6 rounded-xl">
-                    <h2 class="text-2xl font-bold text-blue-400 mb-4">Privacy & Security</h2>
-                    <p class="text-gray-300 leading-relaxed">
-                        Your privacy is our priority. All uploaded photos are processed securely and deleted from our servers
-                        automatically. We do not store your personal data or share your images with third parties.
+                <div class="glass p-8 rounded-3xl neon-border-orange">
+                    <h2 class="text-2xl font-black text-orange-400 mb-4 uppercase tracking-tighter">Privacy & Security</h2>
+                    <p class="text-gray-300 leading-relaxed text-sm">
+                        Security is built into our DNA. We employ end-to-end encryption for every upload.
+                        Your biometric data and images are processed in a volatile memory environment and are purged
+                        immediately after PDF generation. We do not maintain any long-term database of user-uploaded content.
                     </p>
                 </div>
             </section>
@@ -184,11 +185,11 @@
 
         <footer class="border-t border-white/10 mt-12 py-8 text-center text-gray-400">
             <div class="flex justify-center gap-8 mb-4 text-sm">
-                <a href="#" class="hover:text-white">Privacy Policy</a>
-                <a href="#" class="hover:text-white">Terms of Service</a>
-                <a href="#" class="hover:text-white">Contact Us</a>
+                <button onclick="openPolicy('privacy')" class="hover:text-green-400 transition-colors">Privacy Policy</button>
+                <button onclick="openPolicy('terms')" class="hover:text-green-400 transition-colors">Terms of Service</button>
+                <button onclick="openPolicy('contact')" class="hover:text-green-400 transition-colors">Contact Us</button>
             </div>
-            <p>Copyright &copy; 2024 - Powered by <a href="https://www.type4u.qzz.io" class="text-blue-500 hover:underline">type4u.qzz.io</a></p>
+            <p>Copyright &copy; 2026 - Powered by <a href="https://www.type4u.qzz.io" class="text-green-400 hover:underline">type4u.qzz.io</a></p>
         </footer>
     </div>
 
@@ -222,6 +223,15 @@
         </div>
     </div>
 
+    <!-- Policy Modal -->
+    <div id="policy-modal" class="modal items-center justify-center p-4 overflow-y-auto">
+        <div class="glass rounded-3xl max-w-2xl w-full p-8 relative neon-border-green">
+            <button onclick="closePolicy()" class="absolute top-4 right-4 text-2xl text-orange-400">&times;</button>
+            <h2 id="policy-title" class="text-3xl font-black text-green-400 mb-6 uppercase tracking-tighter">Title</h2>
+            <div id="policy-content" class="text-gray-300 space-y-4 max-h-[60vh] overflow-y-auto pr-4 text-sm leading-relaxed"></div>
+        </div>
+    </div>
+
     <!-- Feedback Modal -->
     <div id="feedback-modal" class="modal items-center justify-center p-4">
         <div class="bg-slate-900 rounded-2xl max-w-md w-full p-8 relative">
@@ -246,6 +256,47 @@
     </div>
 
     <script>
+        const policyTexts = {
+            privacy: {
+                title: "Privacy Policy",
+                content: `
+                    <p>At Passport Pro, we are committed to protecting your personal information and your right to privacy.</p>
+                    <p><strong>1. Information We Collect:</strong> We only collect the images you upload for processing. We do not collect cookies or personal identity information.</p>
+                    <p><strong>2. Data Retention:</strong> All images are processed in-memory and are immediately deleted after your PDF is generated. We do not store your photos.</p>
+                    <p><strong>3. Third-Party Services:</strong> If you use AI mode, your image is securely sent to remove.bg or Cloudinary for processing and then promptly deleted from their servers as per our integration protocols.</p>
+                `
+            },
+            terms: {
+                title: "Terms of Service",
+                content: `
+                    <p>By using Passport Pro, you agree to the following terms:</p>
+                    <p><strong>1. Permitted Use:</strong> This tool is for creating personal passport and visa photos. You must have the rights to any images you upload.</p>
+                    <p><strong>2. Disclaimer:</strong> While we aim for 100% accuracy, we do not guarantee that generated photos will be accepted by official government agencies. Always check official requirements.</p>
+                    <p><strong>3. Limitation of Liability:</strong> Passport Pro is not responsible for any rejection of applications or loss of data.</p>
+                `
+            },
+            contact: {
+                title: "Contact Us",
+                content: `
+                    <p>Need support or have questions? Reach out to us:</p>
+                    <p><strong>Email:</strong> support@type4u.qzz.io</p>
+                    <p><strong>Website:</strong> <a href="https://www.type4u.qzz.io" class="text-green-400">www.type4u.qzz.io</a></p>
+                    <p>Alternatively, use the red chat button in the bottom-right corner to report a bug directly.</p>
+                `
+            }
+        };
+
+        window.openPolicy = (type) => {
+            const policy = policyTexts[type];
+            document.getElementById('policy-title').innerText = policy.title;
+            document.getElementById('policy-content').innerHTML = policy.content;
+            document.getElementById('policy-modal').classList.add('flex');
+        };
+
+        window.closePolicy = () => {
+            document.getElementById('policy-modal').classList.remove('flex');
+        };
+
         const presets = {
             india: { w: 413, h: 531, ratio: 35/45 },
             usa: { w: 600, h: 600, ratio: 1/1 },

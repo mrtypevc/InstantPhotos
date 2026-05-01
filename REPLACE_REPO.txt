@@ -1,30 +1,29 @@
-# 🚀 Project Replacement Commands (GitHub Refresh)
+# 🚨 SUPER CLEAN & REFRESH COMMANDS
 
-Agar aap apni purani files delete karke GitHub ki nayi files (`mrtypevc/InstantPhotos`) daalna chahte hain, toh PythonAnywhere Bash Console mein ye commands chalayein:
+Agar aapko "Folder not found" ya koi error aa raha hai, toh ye commands copy karke Bash Console mein paste karein. Ye sab kuch saaf karke naya code load kar dega:
 
 ```bash
-# 1. Purani folder delete karein
-rm -rf /home/TypeVC/passport-app
+# 1. Sab kuch purana delete karein (passport-app aur passport-apppassport-app dono)
+rm -rf /home/TypeVC/passport-app*
 
-# 2. GitHub se naya code clone karein
+# 2. GitHub se naya code ek hi folder mein clone karein
 git clone https://github.com/mrtypevc/InstantPhotos.git /home/TypeVC/passport-app
 
-# 3. Folder mein jayein
+# 3. Virtual environment aur dependencies setup karein
 cd /home/TypeVC/passport-app
+python3 -m venv venv
+source venv/bin/activate
+pip install flask pillow requests python-dotenv cloudinary
 
-# 4. .env file setup karein (API Keys ke liye)
-# Note: Aapko apni keys fir se daalni hongi
+# 4. .env file setup karein
 cp .env.example .env
 ```
 
 ---
 
-### ⚠️ Zaroori Step:
-Iske baad apne **Web tab** par jaakar **Reload** button zaroori dabayein.
+### 🌐 Web Tab Check:
+Commands chalane ke baad "Web" tab mein ye dekhein:
+- **Source code:** `/home/TypeVC/passport-app`
+- **Virtualenv:** `/home/TypeVC/passport-app/venv`
 
-Agar aapko sirf files replace karni hain bina folder delete kiye, toh ye karein:
-```bash
-cd /home/TypeVC/passport-app
-git fetch --all
-git reset --hard origin/main
-```
+Phir **RELOAD** button dabayein. Sab kuch sahi ho jayega!

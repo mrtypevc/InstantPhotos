@@ -1,5 +1,0 @@
-flask
-pillow
-requests
-python-dotenv
-cloudinary

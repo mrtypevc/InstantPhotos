@@ -1,0 +1,30 @@
+# 🚀 Project Replacement Commands (GitHub Refresh)
+
+Agar aap apni purani files delete karke GitHub ki nayi files (`mrtypevc/InstantPhotos`) daalna chahte hain, toh PythonAnywhere Bash Console mein ye commands chalayein:
+
+```bash
+# 1. Purani folder delete karein
+rm -rf /home/TypeVC/passport-app
+
+# 2. GitHub se naya code clone karein
+git clone https://github.com/mrtypevc/InstantPhotos.git /home/TypeVC/passport-app
+
+# 3. Folder mein jayein
+cd /home/TypeVC/passport-app
+
+# 4. .env file setup karein (API Keys ke liye)
+# Note: Aapko apni keys fir se daalni hongi
+cp .env.example .env
+```
+
+---
+
+### ⚠️ Zaroori Step:
+Iske baad apne **Web tab** par jaakar **Reload** button zaroori dabayein.
+
+Agar aapko sirf files replace karni hain bina folder delete kiye, toh ye karein:
+```bash
+cd /home/TypeVC/passport-app
+git fetch --all
+git reset --hard origin/main
+```

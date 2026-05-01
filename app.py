@@ -131,12 +131,19 @@ def process():
                     # Fallback to standard resize
                     img = Image.open(io.BytesIO(img_data)).convert("RGBA")
                     img = img.resize((width, height), Image.LANCZOS)
-                    # Add background color manually if AI was skipped
-                    if bg_color:
-                        new_img = Image.new("RGBA", img.size, bg_color)
-                        new_img.paste(img, (0, 0), img)
-                        img.close()
-                        img = new_img
+
+                # ALWAYS apply background color to handle transparency from remove.bg or original
+                if bg_color:
+                    # Ensure the image is in RGBA to have an alpha channel for masking
+                    if img.mode != 'RGBA':
+                        img = img.convert('RGBA')
+
+                    # Ensure bg_color is applied under the image
+                    new_img = Image.new("RGBA", img.size, bg_color)
+                    # Paste the image onto the background
+                    new_img.paste(img, (0, 0), mask=img.split()[3])
+                    img.close()
+                    img = new_img
 
                 # Add border
                 if border_size > 0:
